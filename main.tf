@@ -4,11 +4,7 @@ resource "aws_instance" "this" {
   
   vpc_security_group_ids = [aws_security_group.this.id]
   
-  user_data = <<EOT
-#!/bin/bash
-sudo apt update
-sudo apt install -y nginx
-EOT
+  user_data = file("${path.module}/user_data.sh") 
   
   user_data_replace_on_change = true
 
@@ -18,10 +14,11 @@ EOT
 }
 
 resource "aws_security_group" "this" {
-  name = "terraform-ec2-sg" 
+  name = "terraform-ec2-sg"
 }
 
 resource "aws_security_group_rule" "ssh" {
+  count = var.allow_ssh ? 1 : 0
   type              = "ingress"
   from_port         = 22 
   to_port           = 22
